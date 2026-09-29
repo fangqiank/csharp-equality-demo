@@ -15,6 +15,7 @@ C# 相等语义对照演示：`==`、`Equals()`、`ReferenceEquals()` 在不同�
 | 7 | **object 陷阱**：`==` 编译期绑定到 `object` 的引用比较 | **False** | True | False |
 | 8 | null 处理：`pNull.Equals(null)` 抛 `NullReferenceException` | True | 💥 | True |
 | 9 | 同一条声明：字面量驻留 vs `new string` 不驻留 | True | True | False |
+| 10 | record class vs record struct：值语义相同；struct 是值类型，赋值即复制、装箱后引用必 False | True | True | False（装箱） |
 
 第 7 节是核心陷阱：同样的两个字符串（一个字面量、一个 `new string`），声明为 `string` 时
 `==` 是值比较（第 4/5 节），声明为 `object` 后 `==` 在**编译期**绑定到 `object` 的引用比较，

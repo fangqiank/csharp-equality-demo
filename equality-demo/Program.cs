@@ -84,6 +84,25 @@ Console.WriteLine($"Equals : {n1.Equals(n2)}");
 Console.WriteLine($"ReferenceEquals : {ReferenceEquals(n1, n2)}");
 Console.WriteLine();
 
+// ============ 10. record class vs record struct ============
+Console.WriteLine("=== 10. record class vs record struct ===");
+// 第 6 节的 record 即 record class：堆上的对象 + 编译器生成的值语义
+var rc1 = new PersonRecord("Tim");
+var rc2 = new PersonRecord("Tim");
+Console.WriteLine($"record class : == {rc1 == rc2}, Equals {rc1.Equals(rc2)}, ReferenceEquals {ReferenceEquals(rc1, rc2)}");
+Console.WriteLine($"record class 是值类型 : {rc1.GetType().IsValueType}");
+
+// record struct：值类型 + 同样的编译器生成值语义（== 也是生成的）
+var rst1 = new PersonRecordStruct("Tim");
+var rst2 = new PersonRecordStruct("Tim");
+Console.WriteLine($"record struct: == {rst1 == rst2}, Equals {rst1.Equals(rst2)}");
+// 注：struct 传入 ReferenceEquals 会装箱（CA2013）——同一个变量装两次箱也不是同一引用
+Console.WriteLine($"record struct ReferenceEquals (装箱) : {ReferenceEquals(rst1, rst1)}");
+Console.WriteLine($"record struct 是值类型 : {rst1.GetType().IsValueType}，赋值/传参即复制");
+var rstCopy = rst1 with { };
+Console.WriteLine($"with 复制后 : == {rstCopy == rst1}");
+Console.WriteLine();
+
 // ============ 类型定义（放在顶级语句之后）============
 // 类型默认 internal，测试项目通过 InternalsVisibleTo 访问
 class PersonModel
@@ -92,3 +111,6 @@ class PersonModel
 }
 
 record PersonRecord(string FirstName);
+
+// record struct：C# 10 起的值类型 record
+record struct PersonRecordStruct(string FirstName);

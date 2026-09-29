@@ -102,4 +102,29 @@ public class EqualityTests
         Assert.True(n1.Equals(n2));
         Assert.False(ReferenceEquals(n1, n2));
     }
+
+    // ============ 10. record class vs record struct ============
+    [Fact]
+    public void RecordClassVsStruct_值语义相同_struct是值类型且装箱引用必False()
+    {
+        var rc1 = new PersonRecord("Tim");
+        var rc2 = new PersonRecord("Tim");
+        Assert.True(rc1 == rc2);
+        Assert.True(rc1.Equals(rc2));
+        Assert.False(ReferenceEquals(rc1, rc2));
+        Assert.False(rc1.GetType().IsValueType);
+
+        var rs1 = new PersonRecordStruct("Tim");
+        var rs2 = new PersonRecordStruct("Tim");
+        Assert.True(rs1 == rs2);
+        Assert.True(rs1.Equals(rs2));
+        Assert.True(rs1.GetType().IsValueType);
+
+        // struct 装箱后引用必不相等——每次装箱都是新对象
+        object b1 = rs1, b2 = rs1;
+        Assert.False(ReferenceEquals(b1, b2));
+
+        var rsCopy = rs1 with { };
+        Assert.True(rsCopy == rs1);
+    }
 }
