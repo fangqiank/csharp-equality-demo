@@ -75,6 +75,15 @@ catch (NullReferenceException)
 }
 #pragma warning restore CS8602
 
+// ============ 9. 同一条声明：驻留 vs 不驻留 ============
+Console.WriteLine("=== 9. 同一条声明：驻留 vs 不驻留 ===");
+// 一条声明里类型只写一次，逗号后是声明符列表；name1 进驻留池，name2 是堆上新实例
+string n1 = "Tim", n2 = new string("Tim".ToCharArray());
+Console.WriteLine($"== : {n1 == n2}");
+Console.WriteLine($"Equals : {n1.Equals(n2)}");
+Console.WriteLine($"ReferenceEquals : {ReferenceEquals(n1, n2)}");
+Console.WriteLine();
+
 // ============ 类型定义（放在顶级语句之后）============
 // 类型默认 internal，测试项目通过 InternalsVisibleTo 访问
 class PersonModel

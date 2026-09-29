@@ -92,4 +92,14 @@ public class EqualityTests
         Assert.True(ReferenceEquals(pNull, null));
         Assert.Throws<NullReferenceException>(() => pNull!.Equals(null));
     }
+
+    // ============ 9. 同一条声明：驻留 vs 不驻留 ============
+    [Fact]
+    public void SingleDeclaration_字面量驻留_newString不驻留()
+    {
+        string n1 = "Tim", n2 = new string("Tim".ToCharArray());
+        Assert.True(n1 == n2);
+        Assert.True(n1.Equals(n2));
+        Assert.False(ReferenceEquals(n1, n2));
+    }
 }
