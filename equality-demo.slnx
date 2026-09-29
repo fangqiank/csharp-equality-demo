@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="equality-demo/equality-demo.csproj" />
+  <Project Path="equality-demo.Tests/equality-demo.Tests.csproj" />
+</Solution>
