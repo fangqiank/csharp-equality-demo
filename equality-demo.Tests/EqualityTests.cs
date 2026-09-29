@@ -127,4 +127,90 @@ public class EqualityTests
         var rsCopy = rs1 with { };
         Assert.True(rsCopy == rs1);
     }
+
+    // ============ 11. double.NaN ============
+    [Fact]
+    public void DoubleNaN_的为False_Equals为True()
+    {
+        double d1 = double.NaN, d2 = double.NaN;
+        Assert.False(d1 == d2);     // IEEE 754：NaN 不等于任何值
+        Assert.True(d1.Equals(d2)); // IEquatable 破例，保证与 GetHashCode 一致
+        Assert.False(ReferenceEquals(d1, d2));
+    }
+
+    // ============ 12. 普通 struct ============
+    [Fact]
+    public void PlainStruct_无运算符_Equals按字段比较()
+    {
+        var p1 = new PointStruct { X = 1, Y = 2 };
+        var p2 = new PointStruct { X = 1, Y = 2 };
+        Assert.True(p1.Equals(p2)); // ValueType.Equals 逐字段
+        Assert.False(ReferenceEquals(p1, p2)); // 各自装箱
+    }
+
+    // ============ 13. dynamic ============
+    [Fact]
+    public void Dynamic_运算期绑定到string的值比较()
+    {
+        string s1 = "Tim";
+        dynamic d1 = s1, d2 = new string("Tim".ToCharArray());
+        Assert.True(d1 == d2);  // 运行期绑定 string ==（object 下是 False）
+        Assert.True(d1.Equals(d2));
+        Assert.False(ReferenceEquals(d1, d2));
+    }
+
+    // ============ 14. int? ============
+    [Fact]
+    public void NullableInt_提升比较不抛NRE_空值装箱即null引用()
+    {
+        int? x = null;
+        Assert.True(x == null);
+        Assert.True(x.Equals(null)); // struct 实例方法，不抛
+        Assert.True(ReferenceEquals(x, null)); // 空 Nullable 装箱 → null 引用
+    }
+
+    // ============ 15. enum ============
+    [Fact]
+    public void Enum_值比较_装箱后引用不同()
+    {
+        ConsoleColor c1 = ConsoleColor.Red, c2 = ConsoleColor.Red;
+        Assert.True(c1 == c2);
+        Assert.True(c1.Equals(c2));
+        Assert.False(ReferenceEquals(c1, c2));
+    }
+
+    // ============ 16. 匿名类型 ============
+    [Fact]
+    public void AnonymousType_没有相等运算符_Equals为值语义()
+    {
+        var a1 = new { Id = 1, Name = "Tim" };
+        var a2 = new { Id = 1, Name = "Tim" };
+        Assert.True(a1.Equals(a2));
+        Assert.False(ReferenceEquals(a1, a2));
+    }
+
+    // ============ 17. ValueTuple vs Tuple ============
+    [Fact]
+    public void ValueTuple有EqEq_Tuple没有但Equals值比较()
+    {
+        (int Id, string Name) vt1 = (1, "Tim"), vt2 = (1, "Tim");
+        Assert.True(vt1 == vt2); // struct，编译器生成 ==
+        Assert.True(vt1.Equals(vt2));
+
+        Tuple<int, string> t1 = Tuple.Create(1, "Tim"), t2 = Tuple.Create(1, "Tim");
+        Assert.True(t1.Equals(t2)); // class，但重写 Equals 为值比较
+        Assert.False(ReferenceEquals(t1, t2));
+    }
+
+    // ============ 18. 委托 ============
+    [Fact]
+    public void Delegate_引用比较_相同lambda不等_赋值后相等()
+    {
+        Action a1 = () => { }, a2 = () => { };
+        Assert.False(a1 == a2); // 两个 lambda → 不同方法 → 不同委托实例
+        Assert.False(a1.Equals(a2));
+        Action a3 = a1;
+        Assert.True(a1 == a3);  // 同一实例
+        Assert.True(ReferenceEquals(a1, a3));
+    }
 }

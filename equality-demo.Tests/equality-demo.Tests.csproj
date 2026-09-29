@@ -4,8 +4,9 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <!-- 本项目测的就是 Equals/== 语义本身，xUnit2010（建议改用 Assert.Equal）在此属误报 -->
-    <NoWarn>$(NoWarn);xUnit2010</NoWarn>
+    <!-- 本项目测的就是 Equals/== 语义本身：xUnit2010（建议改用 Assert.Equal）与
+         CA2013（装箱调用 ReferenceEquals）都是测试对象，在此属误报 -->
+    <NoWarn>$(NoWarn);xUnit2010;CA2013</NoWarn>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 

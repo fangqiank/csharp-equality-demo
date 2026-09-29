@@ -8,6 +8,9 @@ Console.WriteLine($"Equals : {count1.Equals(count2)}");
 Console.WriteLine($"ReferenceEquals (装箱) : {ReferenceEquals(count1, count2)}");
 Console.WriteLine();
 
+// 本 demo 后面还有多处故意装箱的 ReferenceEquals 调用（CA2013），统一在此关闭
+#pragma warning disable CA2013
+
 // ============ 2. 普通类 ============
 Console.WriteLine("=== 2. 普通类 (class) ===");
 var p1 = new PersonModel { FirstName = "Tim" };
@@ -103,6 +106,77 @@ var rstCopy = rst1 with { };
 Console.WriteLine($"with 复制后 : == {rstCopy == rst1}");
 Console.WriteLine();
 
+// ============ 11. double.NaN ============
+Console.WriteLine("=== 11. double.NaN：== 与 Equals 打架 ===");
+double nan1 = double.NaN, nan2 = double.NaN;
+Console.WriteLine($"== : {nan1 == nan2}");          // False：IEEE 754 规定 NaN 不等于任何值（包括自己）
+Console.WriteLine($"Equals : {nan1.Equals(nan2)}"); // True：IEquatable 破例，保证与 GetHashCode 一致
+Console.WriteLine($"ReferenceEquals (装箱) : {ReferenceEquals(nan1, nan2)}");
+Console.WriteLine();
+
+// ============ 12. 普通 struct ============
+Console.WriteLine("=== 12. 普通 struct：默认没有 == ===");
+var pt1 = new PointStruct { X = 1, Y = 2 };
+var pt2 = new PointStruct { X = 1, Y = 2 };
+// pt1 == pt2 : ❌ 编译错误 CS0019——普通 struct 不像 record struct 会自动生成 ==
+Console.WriteLine($"Equals : {pt1.Equals(pt2)}");  // True：ValueType.Equals 逐字段比较
+Console.WriteLine($"ReferenceEquals (装箱) : {ReferenceEquals(pt1, pt2)}"); // False：各自装箱
+Console.WriteLine();
+
+// ============ 13. dynamic ============
+Console.WriteLine("=== 13. dynamic：== 改为运行期绑定 ===");
+dynamic dy1 = name1, dy2 = name3; // 与第 7 节完全相同的两个字符串，只是 object 换成 dynamic
+Console.WriteLine($"== : {dy1 == dy2}"); // True：运行期绑定到 string 的值比较（第 7 节里是 False）
+Console.WriteLine($"Equals : {dy1.Equals(dy2)}");
+Console.WriteLine($"ReferenceEquals : {ReferenceEquals(dy1, dy2)}"); // False：引用本身仍不同
+Console.WriteLine();
+
+// ============ 14. int? ============
+Console.WriteLine("=== 14. int?：提升运算符，永不抛 NRE ===");
+int? nx = null;
+Console.WriteLine($"nx == null : {nx == null}");            // True：== 被提升到 Nullable
+Console.WriteLine($"nx.Equals(null) : {nx.Equals(null)}"); // True：struct 实例方法不抛 NRE（对照第 8 节 💥）
+Console.WriteLine($"ReferenceEquals(nx, null) : {ReferenceEquals(nx, null)}"); // True！空 Nullable 装箱直接得到 null 引用
+Console.WriteLine();
+
+// ============ 15. enum ============
+Console.WriteLine("=== 15. enum ===");
+ConsoleColor c1 = ConsoleColor.Red, c2 = ConsoleColor.Red;
+Console.WriteLine($"== : {c1 == c2}");          // True：enum 的 == 按底层值比较
+Console.WriteLine($"Equals : {c1.Equals(c2)}"); // True
+Console.WriteLine($"ReferenceEquals (装箱) : {ReferenceEquals(c1, c2)}"); // False：装箱
+Console.WriteLine();
+
+// ============ 16. 匿名类型 ============
+Console.WriteLine("=== 16. 匿名类型：没有 ==，Equals 是值语义 ===");
+var anon1 = new { Id = 1, Name = "Tim" };
+var anon2 = new { Id = 1, Name = "Tim" };
+// anon1 == anon2 : ❌ 编译错误——匿名类型不生成 == 运算符
+Console.WriteLine($"Equals : {anon1.Equals(anon2)}"); // True：编译器生成的逐属性值比较
+Console.WriteLine($"ReferenceEquals : {ReferenceEquals(anon1, anon2)}"); // False：两个独立对象
+Console.WriteLine();
+
+// ============ 17. ValueTuple vs Tuple ============
+Console.WriteLine("=== 17. ValueTuple vs Tuple ===");
+(int Id, string Name) vt1 = (1, "Tim"), vt2 = (1, "Tim");
+Console.WriteLine($"ValueTuple == : {vt1 == vt2}");     // True：struct，C# 7.3 起生成 ==（逐元素比较）
+Console.WriteLine($"ValueTuple Equals : {vt1.Equals(vt2)}");
+System.Tuple<int, string> tp1 = Tuple.Create(1, "Tim"), tp2 = Tuple.Create(1, "Tim");
+// tp1 == tp2 : ❌ 编译错误——Tuple (class) 没有 == 运算符
+Console.WriteLine($"Tuple Equals : {tp1.Equals(tp2)}"); // True：class 但重写 Equals 为值比较
+Console.WriteLine($"Tuple ReferenceEquals : {ReferenceEquals(tp1, tp2)}"); // False
+Console.WriteLine();
+
+// ============ 18. 委托 ============
+Console.WriteLine("=== 18. 委托：== 是引用比较 ===");
+Action act1 = () => { }, act2 = () => { }; // 两个"写法相同"的 lambda → 两个不同方法 → 不同委托实例
+Console.WriteLine($"act1 == act2 : {act1 == act2}");              // False
+Action act3 = act1;
+Console.WriteLine($"act3 = act1 后 act1 == act3 : {act1 == act3}"); // True：同一实例
+Console.WriteLine($"act1.Equals(act2) : {act1.Equals(act2)}");     // False：Delegate.Equals 同样比较调用列表
+Console.WriteLine($"ReferenceEquals(act1, act3) : {ReferenceEquals(act1, act3)}"); // True
+Console.WriteLine();
+
 // ============ 类型定义（放在顶级语句之后）============
 // 类型默认 internal，测试项目通过 InternalsVisibleTo 访问
 class PersonModel
@@ -114,3 +188,10 @@ record PersonRecord(string FirstName);
 
 // record struct：C# 10 起的值类型 record
 record struct PersonRecordStruct(string FirstName);
+
+// 普通 struct：不生成 ==，Equals 继承 ValueType 逐字段比较
+struct PointStruct
+{
+    public int X { get; set; }
+    public int Y { get; set; }
+}
