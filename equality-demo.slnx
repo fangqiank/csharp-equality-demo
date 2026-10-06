@@ -1,4 +1,5 @@
 <Solution>
-  <Project Path="equality-demo/equality-demo.csproj" />
   <Project Path="equality-demo.Tests/equality-demo.Tests.csproj" />
+  <Project Path="equality-demo/equality-demo.csproj" />
+  <Project Path="EqualityOverride/EqualityOverride.csproj" Id="b73620ac-c843-44a2-8cc3-c3537224b313" />
 </Solution>

@@ -1,3 +1,4 @@
+using EqualityOverride;
 using Xunit;
 
 namespace equality_demo.Tests;
@@ -212,5 +213,19 @@ public class EqualityTests
         Action a3 = a1;
         Assert.True(a1 == a3);  // 同一实例
         Assert.True(ReferenceEquals(a1, a3));
+    }
+
+    // ============ 19. 手动重写相等性（EqualityOverride 项目）============
+    [Fact]
+    public void ManualOverride_值相等_新实例可命中字典()
+    {
+        var p3 = new Person { FirstName = "Tim", LastName = "Smith" };
+        var lookup = new Person { FirstName = "Tim", LastName = "Smith" };
+        Assert.True(p3 == lookup);
+        Assert.True(p3.Equals(lookup));
+        Assert.False(ReferenceEquals(p3, lookup));
+
+        var dict = new Dictionary<Person, int> { [p3] = 3 };
+        Assert.Equal(3, dict[lookup]); // GetHashCode + Equals 使新实例命中
     }
 }

@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\equality-demo\equality-demo.csproj" />
+    <ProjectReference Include="..\EqualityOverride\EqualityOverride.csproj" />
   </ItemGroup>
 
 </Project>
