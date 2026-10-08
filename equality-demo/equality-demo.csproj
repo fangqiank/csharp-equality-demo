@@ -6,6 +6,9 @@
     <RootNamespace>equality_demo</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!-- 第 1 节（值类型）故意对 int 调 ReferenceEquals 演示装箱陷阱：
+         CA2013 警告的正是这个教学点，在此属误报 -->
+    <NoWarn>$(NoWarn);CA2013</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

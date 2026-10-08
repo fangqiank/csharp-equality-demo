@@ -2,8 +2,8 @@
 {
     public class Person : IEquatable<Person>
     {
-        public string FirstName { get; init; }
-        public string LastName { get; init; }
+        public required string FirstName { get; init; }
+        public required string LastName { get; init; }
 
         public bool Equals(Person? other)
         => other is not null
