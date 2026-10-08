@@ -1,0 +1,87 @@
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build and run demos
+        run: |
+          dotnet build
+          dotnet run --no-build --project equality-demo > demo.txt
+          dotnet run --no-build --project EqualityOverride > override.txt
+
+      - name: Generate page
+        run: |
+          mkdir -p _site
+          esc() { sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' "$1"; }
+          {
+            cat <<'HEAD'
+          <!doctype html>
+          <html lang="zh-CN">
+          <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>C# 相等语义对照演示 · 运行结果</title>
+          <style>
+            body { max-width: 60rem; margin: 0 auto; padding: 1.5rem 1rem 3rem; font-family: system-ui, sans-serif; line-height: 1.6; color: #24292f; }
+            h1 { font-size: 1.5rem; }
+            h2 { font-size: 1.1rem; margin-top: 2rem; }
+            p.lead { color: #57606a; }
+            pre { background: #161b22; color: #d4d4d4; padding: 1rem 1.25rem; border-radius: 8px; overflow-x: auto; font-size: .875rem; line-height: 1.5; }
+            a { color: #0969da; }
+            code { background: #eff1f3; padding: .1em .35em; border-radius: 4px; }
+          </style>
+          </head>
+          <body>
+          <h1>C# 相等语义对照演示</h1>
+          <p class="lead"><code>==</code>、<code>Equals()</code>、<code>ReferenceEquals()</code> 在不同类型下的行为差异——以下为仓库 demo 的真实运行输出，每次推送 main 自动更新。<a href="https://github.com/fangqiank/csharp-equality-demo">源码与逐节讲解见 GitHub 仓库 →</a></p>
+          <h2>主 demo：18 节对照（equality-demo）</h2>
+          <pre>
+          HEAD
+            esc demo.txt
+            cat <<'MID'
+          </pre>
+          <h2>第 19 节：手动重写相等性（EqualityOverride）</h2>
+          <pre>
+          MID
+            esc override.txt
+            cat <<'TAIL'
+          </pre>
+          </body>
+          </html>
+          TAIL
+          } > _site/index.html
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
