@@ -104,6 +104,8 @@ return left.Equals(right);
 
 ## 运行
 
+**在线查看运行结果**：<https://fangqiank.github.io/csharp-equality-demo/> （每次 push 到 main 自动更新）
+
 ```bash
 dotnet run --project equality-demo      # 主 demo：18 节
 dotnet run --project EqualityOverride   # 第 19 节：手动重写相等性
